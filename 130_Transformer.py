@@ -8,8 +8,7 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.17.3
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
+#     display_name: Python 3
 #     name: python3
 # ---
 
@@ -51,16 +50,16 @@
 # %% [markdown] id="swymtxpl7W7w"
 # ## Setup
 
-# %% colab={"base_uri": "https://localhost:8080/", "height": 815} id="XFG0NDRu5mYQ" outputId="df9820e6-6ea9-4eb9-b996-166d6f03f088"
+# %% colab={"base_uri": "https://localhost:8080/"} id="XFG0NDRu5mYQ" outputId="e979b21a-e2e5-488a-d05a-3d64e8f4d302"
 # 최신 버전의 TensorFlow를 설치하여
 # `tf.keras.layers.MultiHeadAttention`의 개선된 마스킹 지원을 사용하세요.
-# !apt install --allow-change-held-packages libcudnn8=8.1.0.77-1+cuda11.2
 # !pip uninstall -y -q tensorflow keras tensorflow-estimator tensorflow-text
-# !pip install protobuf~=3.20.3
-# !pip install -q tensorflow_datasets
-# !pip install -q -U tensorflow-text tensorflow
 
-# %% id="JjJJyJTZYebt"
+# !pip install -q -U tensorflow tensorflow-text tensorflow_datasets
+
+# 설치 후 런타임 재시작(중요) - Colab에서는 메뉴에서 Restart runtime
+
+# %% colab={"base_uri": "https://localhost:8080/"} id="JjJJyJTZYebt" outputId="694ecc95-7e34-4254-a363-c7bb46a08fca"
 import logging
 import time
 
@@ -71,6 +70,20 @@ import tensorflow_datasets as tfds
 import tensorflow as tf
 
 import tensorflow_text
+
+# GPU 사용 가능 여부 확인
+print("GPU 사용 가능:", len(tf.config.list_physical_devices('GPU')) > 0)
+if len(tf.config.list_physical_devices('GPU')) > 0:
+    print("사용 가능한 GPU:", tf.config.list_physical_devices('GPU'))
+    # GPU 메모리 증가 설정 (필요한 만큼만 사용)
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            print("GPU 메모리 증가 설정 완료")
+        except RuntimeError as e:
+            print(e)
 
 # %% [markdown] id="Xf_WUi2HLhzf"
 # ## 데이터 처리
@@ -83,7 +96,7 @@ import tensorflow_text
 # %% [markdown] id="LTEVgBxklzdq"
 # TensorFlow 데이터세트를 사용하여 포르투갈어-영어 번역 데이터세트를 로드합니다. 이 데이터 세트에는 약 52,000개의 훈련, 1,200개의 검증 및 1,800개의 테스트 예제가 포함되어 있습니다.
 
-# %% colab={"base_uri": "https://localhost:8080/", "height": 187, "referenced_widgets": ["1e75dfd3288248c29b22fee62b05f904", "8b862e8dbd2a4300bb0eb2a9a63fdb6f", "d51bc78cc30047de93c2fa9454af6d92", "d0230f0cc3634f988a85cb626892c4d8", "48044430cf1a40908ae7e3b6e0c7cd19", "60c4b2d841c1455a9948ed41085422de", "2415c6fa28214fd8800b7cb13166a187", "699863452fd3436f80b5e321d3da87ef", "99cd74637a1c4dceb4f3448fe052dda1", "e78e79f08a254b6da3905f5c02004840", "69ae92dd72744231bf5c62e4b6a708b9", "b428ce94ce454fc897b3492eb15a8a73", "5496d01a047147f7bbdd833aaae25cf5", "9ef55d2e65e94072b28bc2384c97554d", "ea96604da3b84f86bdfdf7787e2fa6fa", "b70771c9634441009ae8bd9b40c4bad0", "3767ea0ac2574bd195ae46bdd7ef5d74", "345102682bfd49bca5d319613986f513", "b367d146488c4c5ba7f3867c939fbb24", "42182ce367ba4edf8023c803e9702542", "382f2963645749b696ae6ae01482d795", "1ce39b723e3a49818a9eb4368fefcedd", "4beca4faeb48447f97d584156417ed55", "9e68386446b74fca8cf75d8e2726d26c", "a2c19143473c428381275ff68c0dbc73", "6263d99e42b24d668386f71ae35a4954", "b16d01b56f024a92b317541507a5aee0", "844579b1dde246818a461d6bab5ff6db", "074d8b8390bf4bf798b32bf9ad155dfa", "57daafe3440c4905b70f92c94ab4eaca", "b6a55127eee44c7b86e6ec14bc14afab", "41aaabc7d11a4ae3a3e6ba257b116019", "4287b6563d284c46b82a54837e161196", "8d16d655dcd24e6a9dfa1cf21e320286", "e571c1b9eb0c4e15bc8e0b4dd8b9e44e", "52764cc6c8f9470da7a53b49556f6c99", "65d8f509212d438ba6072baa77a80d3d", "fa3bc7c0a7344dc68ccc950e2af9e6e0", "21b9e3ee4b4c4aab80126399739af2e2", "78c38dda733f442895af8752d3d9e689", "425854556bab4b6fb897283f3a99c03c", "a2f1a1fe68354d40b4c6d8964907cac8", "fcfad0840a39416da0596cfcfc7c646c", "a27037cb4d1d47399de6d6499598ba24", "0f03937a4a4d49e0bb42eacad878e890", "f83d8111134d45a88ed4d8c433641487", "436171aeafea4285a4a9dd9ea25a9755", "2c4d407bfa6d41bd9669dffc03131565", "3a053bbe837e4970949b003ca33d840e", "588a874377574749b22b2361408fd646", "77e58d4814564ec7b4904277b7fa5b10", "526b8eef5c794f0f86e5195849229036", "18864707e5604f709b502504f8b048c9", "21c00374f38049f4812ba47f907fa49d", "7f097af633f4425c862f45e4e5b3c4fd", "9b7aa9293e7b48b4b3086cb064836c8a", "dacf69017add43379645e03686f9586f", "373e96a93237481fa4f458b652dd9fcf", "a68be11a650946b4bef84b0210ca4675", "4dd0c7bfce5b4fc9ae50bee95657c540", "8dd4483783e945639faff96b1d587125", "b685504ad56649349a6c051538619e1a", "51fcf17aaac84206914f59f2dbff950a", "b2a6907934254352b085e24da0f938e7", "739acd66ee3a4188836b7ab435ada694", "3a7accfa1c0d4d8c92e7f79aff925f90", "d521ed2d5aa94c2887b7bdb235954a74", "73ad991f55fc419ba86b2364b511c8f2", "8a46d35e663049d59606715d52b38993", "13cc7822b06249fc89488335ada3ea2e", "840a2f5834234a41b9515f8d7f03f3aa", "ba231af5c8f84713b1349f05f97a3ecb", "564bcbdad3c8499aa2d565fa9e2c6418", "c8d5c611291f409ba39c52ea35408c48", "f00336ba33814b218e1ed835293bfa7e", "ab9d0e6ebc1e4e16bfdfc633b44635fd", "71f01e47a60c4c88a0dcdbb9846d2f86", "4fa0f050349d4b9a98b3dd38e4fa5214", "b525597ef7844b2cab5cade41605b3e1", "6b79d189c75b47629d3cb84dd3974456", "a3d3c55561664a96ba18842640117846", "cfe7e2e6d5424d28ba64ca91c0de7048", "0ab417756a884c1dbcbc4de1c8dba9bd", "231fdea8a7de407cafa3e0a2400cddb5", "93a6204683e7471b8e3e121b2f86b49f", "89b189bb6747417a9a36a1016b44e066", "1c04531ead1b4bb4b0ada456a2d8df00", "b84f1a1db3744c5b943ea3bdfb9fc741", "a21c462cb67343059ac7350d9016c5e4", "659d69097a194d1287a43be2afe2e9d5", "4ffd2bd2dc7540d98cfce051ebc14cb5", "b5b382d86e884c18876ac250c0f162bd", "cbf5a51ce9ad48468e4ada0df852491c", "6112efd00a4341ffbb109327e9a89e58", "46ee4810668d456094ed09bcc832a23f", "b30ab2b6e8e949809dd078facb32d8f1", "4c8819f0ac3240d782c90913c293dac9", "8896fca3d2cf4a0a9c4e636be2c7319a", "ee5c580e42b94857abc333e2c83aedf2", "96b8ac5153a641a695680440af1d6193", "e19bf21662ad431f9e6e319a5f38ac87", "ad52d9cba3074997a3f5464da7e1a30c", "1aa5a8781dcc4d3db1bb8cd6dc23e6e7", "8f2ef7a8908e4a54b420c30028eefd80", "73d05d26cbcc4051beba7f7bd93c0512", "5665762d66824c07b1ad9387fd88d284", "1f2f48dea55e4bd3a3be9ab244c37e23", "8f75e4cde9b04424a266c973973d294c", "624aea718ff943c980fa760c4a52548b", "11c8807f739044f188e8cf1f63f14fe8"]} id="8q9t4FmN96eN" outputId="1df30c60-ab86-4a9c-b684-b0f79955f486"
+# %% colab={"base_uri": "https://localhost:8080/", "height": 168, "referenced_widgets": ["c9079ca566e94c9aba3ea4bcad4047ab", "fa2c04a650f2452b91bc6f14df7e6642", "218c7488dcdf43d08726511209f29749", "8bbe6ac5f4f14e3d9efa17295f0da14a", "32e9104ebe0c41e0a6bb9b8b00bddfc8", "5c5ef62be79a4144b8c2507f95736877", "98efa9848f3e478a85bb756ade07548f", "483b30ac93e84d038ed45cefd010c590", "3ecb176e7fbd4d4898e976a7ea4ed40a", "f9c3085a7c54400aac9f50b1fa0dbdc9", "aadb16ab4d6d4ed08cb19957c65339fd", "7cd9a2b6df834049b19aad18c4a9060c", "30c009958247451699f4aee526eaa22f", "a0bafdba342e4d60bfdaa68f4395a48b", "0c64b53475ac4d28a3913c69289684ce", "e6e6364d3efe4676bf19425f5f511f20", "47775de1b98d413f819aa2938375e8f3", "5edca14309ca4b1e9e82cf663a2e477d", "34ae6046b2954e3e8baceb027457fe2e", "6fc7376806e142b68dae5230906f4bb8", "4e924479dd8c4cb486a33db19bb2f9c3", "0a4362a4c7de434399d7aeb53864c962", "4bb9d66231874b149012a1db34be4c95", "6a153b9a2b4f43089d455cad0de2d886", "4cd41676d9994d36ab3e08966ab28789", "38cd7fb8b5244d9f902615462a00250c", "d3fa9fb07b824ec58a65d3acdfa32fcf", "12a75bcb8ff64723ac7d1a98416c9409", "1aa895d4930f440b828c5a6ef0092f14", "15d34f81bef4467f9474407d648b26ae", "ed7766c88c724a5e92d7979b83fa2bd8", "d185061c42a04dec9ea024007872af84", "62cc106c5e3c493e97a4ab386ef72d78", "28c16ab07ada40528192b281515efd5d", "91e343d389094aa29d7eb21f50163908", "2842200cb39142cab4c3fd44bc76044c", "54ed50c6cf7147cdbf167deaf04389b6", "cec0752c690149caafdd69b093bd5b29", "7512ad08df284a5c81c1a93dd8958900", "311e9aff98c94fdcbe48e1b24657d06e", "9fc73c4302fd45dd881b62c63a1aa204", "25f5a801c8e14d74bcd38199ad7b0860", "6ed6e16e029f4f7d9572c543f579346c", "6235faa628f3455e8ae02ab9cf1bf782", "b4cc3d0b53e44dec8203fc726c23f52c", "3faf7d7f165d483f8f3fd9b5469cf699", "64f48289d0b64f85a0fb43843aac150e", "5eaf9dbc985f4cf284915b3fb56c0e89", "4b1723011793495593d17d7b9616288c", "821177c8197b4ee2b3d9cae3e2410848", "34984a0da9fb4f9d95b19c1a3726b54b", "660876ad1d1d467b893c7fc909ea6102", "b1698aa726df4169947e5ffbd974d531", "e9cb824cff9f47aa873eb517ad5e7dfc", "f5da2551d3c143fea3a778efd47170ed", "443b5da79979428ea9bee38d4ca97a97", "aa68df338d864c559d441cb709bf9cf5", "9abdd0638d494b9cacb5383cec8ad1ab", "80b4ecad18af4ef78ae5906499b2e9af", "485ce7017b3f47fa886b2215014393d6", "03137e508e9a4fac998a1afaa0fe772d", "8f797d7347c0483c8ab0fefef85f4326", "5d769a4d87f94e8a8ddde042f9e1aee0", "511b6991e01e493780eedd44f9471a35", "441ada2f746b44c79533d4dad83d8b58", "7651edf5ffe34967a4ffa457edff4997", "4c7baca83ea542259a1305d5b744d07c", "a670955f1f2f4f119850cc54bab30d15", "2cfd2a9a1ac640a39a83fbed2b6ecc42", "dbfbdcf787fd47e386cc51a5e106a457", "ab0162c6a88c4dbc9214d30971cb61af", "5fa148b2fc9944a78e41f576ab125ca9", "07c6c391777c4f68900a3f14da52618e", "a8692dafcaca450ab8e0c84bda51d58f", "9e8692b67fb149818e426a001871d507", "9c5d6dfd7c284fbdba1fc7c9c5ac4801", "9d93344cd6714c4fa160fe8592728ca4", "ad530321218b4e36bb2ebabce1cf93ff", "2a0d96dbdb0a4416afc214d5a57e03ff", "2bd3e30d7e994255b3e395075176fb61", "6fd1d8374cc9412a9fe02f95467a526b", "7fc8b12da47a40d1b8ecb99b2dd20ad4", "75dad607af2b45568f85ce39c3b4f880", "86d1f328a1fe4fa781d9aaf96664e957", "6507f3cdabed47d28824b0693ee3fdb9", "6ec75455709b4a4998504d7c2e63ef7b", "97a401cb14704f0d83bd541f9b42ac92", "5b418e999ae04eb4b0082c0d23dd4ec9", "db2e1eac04d4491383029d727a1a67c2", "eb579d57b1a64094853335637ecda539", "2b9115ef11bd4010a1cc9fec8e70ba88", "d7ed5c3713814987aaf6c7014cc3cb2e", "db0e4dac2d6b46dd9ed89c74ac2bfd4a", "a8029181ca04404f954c1518c1c36aa6", "7cca6ffdb5f3412bb68552b31934299e", "78f01a7b68ee41c59024f2d06d45915a", "4a0a16c5bbbf4422adf72e1d238ab2e1", "3e0feed1f6bb47139660255969b980cd", "2c9470a6e46f42948db295867131945d", "ae140b8a86904e5ebf62f388ffe86e59", "e7c84f4cab9d4990b46b2a55d9009123", "e31334a3a2cd4831a97d77c70c0822af", "d8726a2d13f44e70ba6cd99829ffa9b2", "772d2d377f6d415187383f96294fee80", "972d681a2ce74afeb734d56a6a4b4907", "3fed7e03a27f4774a74b7a9ffb8018f3", "ed0f7a331aba44c4bc35c1d4b7151703", "1e2a44d55f3e4e5ab67244ac4e83341a", "a2d068b9b7e34502a6770ab3e2db343e", "b545927ca3664861b17e0ef919cc6618"]} id="8q9t4FmN96eN" outputId="460fce3a-86dd-438d-9817-b77b8ebeff01"
 # 'ted_hrlr_translate/pt_to_en' 데이터셋 로드
 examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en',
                                with_info=True,
@@ -95,7 +108,7 @@ train_examples, val_examples = examples['train'], examples['validation']
 # %% [markdown] id="ZA4cw7F_DmSt"
 # TensorFlow Datasets에서 반환된 `tf.data.Dataset` 객체는 텍스트 예제 쌍을 생성합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="CZFAMZJyDrFn" outputId="ef954dbb-7f6c-44e6-f0d5-2c9bf097c041"
+# %% colab={"base_uri": "https://localhost:8080/"} id="CZFAMZJyDrFn" outputId="270e8d65-6b34-4f1f-ba65-b7d84751716b"
 # 훈련 데이터셋에서 포르투갈어 및 영어 예제 출력
 for pt_examples, en_examples in train_examples.batch(3).take(1):
   print('> 포르투갈어 예제:')
@@ -116,7 +129,7 @@ for pt_examples, en_examples in train_examples.batch(3).take(1):
 # %% [markdown] id="GJr_8Jz9FKgu"
 # 이 튜토리얼에서는 [서브워드 토크나이저](https://www.tensorflow.org/text/guide/subwords_tokenizer) 튜토리얼에 내장된 토크나이저를 사용합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/", "height": 72} id="QToMl0NanZPr" outputId="2c93e706-6fc9-43d3-dcbe-06d992c12833"
+# %% colab={"base_uri": "https://localhost:8080/", "height": 72} id="QToMl0NanZPr" outputId="a21c00b4-8b85-4b98-ea42-61f896634f84"
 # 'ted_hrlr_translate_pt_en_converter' 모델 다운로드 및 압축 해제
 model_name = 'ted_hrlr_translate_pt_en_converter'
 
@@ -138,19 +151,19 @@ tokenizers = tf.saved_model.load(model_path)
 # %% [markdown] id="CexgkIS1lzdt"
 # `tf.saved_model`에는 두 개의 텍스트 토크나이저가 포함되어 있습니다. 하나는 영어용이고 다른 하나는 포르투갈어용입니다. 둘 다 동일한 방법을 사용합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="s-PCJijfcZ9_" outputId="1c9b8774-8413-4c18-d916-a29cf6ce850e"
+# %% colab={"base_uri": "https://localhost:8080/"} id="s-PCJijfcZ9_" outputId="635aae7d-f516-4d6e-8da1-dee82ce8589a"
 # tokenizers.en 객체의 사용 가능한 메소드와 속성 리스트 출력
 [item for item in dir(tokenizers.en) if not item.startswith('_')]
 
 # %% [markdown] id="fUBljDDEFWUC"
 # `tokenize` 메서드는 문자열 배치를 패딩된 토큰 ID 배치로 변환합니다. 이 방법은 토큰화하기 전에 입력을 구두점, 소문자로 나누고 유니코드 정규화합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="z_gPC5iwFXfU" outputId="d45c7449-38d6-4083-fdab-42cb3b222e2d"
+# %% colab={"base_uri": "https://localhost:8080/"} id="z_gPC5iwFXfU" outputId="3624dd35-632f-4102-a9ee-6e1774df30d7"
 # TensorFlow 데이터셋에서 로드한 배치의 영어 문장 출력
 for en in en_examples.numpy():
   print(en.decode('utf-8'))   # 영어 문장을 UTF-8로 디코딩하여 출력
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="uSkM7z8JFaVO" outputId="fd67e0cb-4d73-4c92-be7c-4bf3fded1159"
+# %% colab={"base_uri": "https://localhost:8080/"} id="uSkM7z8JFaVO" outputId="0b80ec52-340f-466f-c3e5-aa884a238a06"
 # 로드된 토크나이저를 사용하여 영어 문장을 토큰 ID로 변환
 encoded = tokenizers.en.tokenize(en_examples)
 
@@ -161,7 +174,7 @@ for row in encoded.to_list():
 # %% [markdown] id="nBkv7XeBFa8_"
 # `detokenize` 메소드는 이러한 토큰 ID를 사람이 읽을 수 있는 텍스트로 다시 변환 합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="-CFS5aAxFdpP" outputId="262a36dc-1a1c-40d9-abdf-670e50f5f053"
+# %% colab={"base_uri": "https://localhost:8080/"} id="-CFS5aAxFdpP" outputId="7219a42b-641c-430a-f5ea-f37d293d97a5"
 # 토큰 ID를 다시 사람이 읽을 수 있는 텍스트로 변환
 round_trip = tokenizers.en.detokenize(encoded)
 
@@ -172,7 +185,7 @@ for line in round_trip.numpy():
 # %% [markdown] id="G-2gMSBBU-AE"
 # 하위 수준 `lookup` 메서드는 토큰 ID를 토큰 텍스트로 변환합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="XaCeOnswVAhI" outputId="b1455497-73cc-4a06-9ef4-33e8e81b7b76"
+# %% colab={"base_uri": "https://localhost:8080/"} id="XaCeOnswVAhI" outputId="abf26162-5fc7-4a55-b6b3-4d976bf63446"
 # 토큰 ID를 다시 개별 토큰으로 변환
 tokens = tokenizers.en.lookup(encoded)
 tokens
@@ -187,7 +200,7 @@ tokens
 # %% [markdown] id="nWLYbGcpS0Ji"
 # "Transformer is awesome."을 tokenize 하면 다음과 같습니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="fmr0-9iPSzr4" outputId="e11fd94f-904e-4784-81da-e3674b10a041"
+# %% colab={"base_uri": "https://localhost:8080/"} id="fmr0-9iPSzr4" outputId="87711b2a-1f64-44ac-e064-9161f4a3e7f6"
 sample_string = tf.constant(['Transformer is awesome.'])
 
 tokenized_string = tokenizers.en.tokenize(sample_string)
@@ -199,7 +212,7 @@ print(tokenizers.en.detokenize(tokenized_string).numpy())
 # %% [markdown] id="g_4vdnhSaATh"
 # 데이터 세트의 example당 토큰 분포는 다음과 같습니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="KRbke-iaaHFI" outputId="1a76b3db-68b3-4958-a755-c5d6f8a7b844"
+# %% colab={"base_uri": "https://localhost:8080/"} id="KRbke-iaaHFI" outputId="12e9965d-b86e-41a8-c0c4-615c5bca9bf4"
 # 포르투갈어와 영어 문장들의 토큰 개수를 저장할 리스트
 lengths = []
 
@@ -215,7 +228,7 @@ for pt_examples, en_examples in train_examples.batch(1024):
 
   print('.', end='', flush=True)  # 진행 상태 표시
 
-# %% colab={"base_uri": "https://localhost:8080/", "height": 452} id="9ucA1q3GaK_n" outputId="9c2f56e0-ad09-4ee6-ee09-5a910f165442"
+# %% colab={"base_uri": "https://localhost:8080/", "height": 452} id="9ucA1q3GaK_n" outputId="a7dd8201-db02-45b7-e1d9-ad1e0532f4f8"
 # 모든 토큰 개수를 하나의 배열로 결합
 all_lengths = np.concatenate(lengths)
 
@@ -245,12 +258,12 @@ plt.title(f'Maximum tokens per example: {max_length}');
 # "Ragged batch"는 TensorFlow에서 사용되는 용어로, 각 요소의 길이가 서로 다른 배치를 의미합니다. 이는 특히 자연어 처리에서 문장 또는 문서의 길이가 서로 다를 때 이를 표현하기 위해 사용됩니다.
 #  RaggedTensor는 이러한 가변 길이 시퀀스를 효율적으로 저장하고 처리할 수 있도록 설계되었습니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="2OGQoYB4TghD" outputId="9475f118-9bbd-494b-d259-396835bdcd87"
+# %% colab={"base_uri": "https://localhost:8080/"} id="2OGQoYB4TghD" outputId="9ac9101b-62f1-438c-e85e-99f3976bf17d"
 print(tokenized_string)   # Ragged Tensor
 print(tokenized_string.to_tensor())
 
 # %% id="6shgzEck3FiV"
-MAX_TOKENS = 128
+MAX_TOKENS = 64
 
 def prepare_batch(pt, en):
     # 포르투갈어 문장 토큰화 및 최대 토큰 수에 맞게 잘라내기
@@ -277,7 +290,7 @@ def prepare_batch(pt, en):
 
 # %% id="bcRp7VcQ5m6g"
 BUFFER_SIZE = 20000
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 
 
 # %% id="BUN_jLBTwNxk"
@@ -297,13 +310,14 @@ def make_batches(ds, num_samples=5000):
 # %% [markdown] id="itSWqk-ivrRg"
 # ## Dataset 테스트
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="_lwotu5sV063" outputId="1e199a40-9250-4a2e-8e77-2f1c7568ccc6"
+# %% colab={"base_uri": "https://localhost:8080/"} id="_lwotu5sV063" outputId="178dd8b8-4348-4b87-fc15-6050b35b01a9"
 len(train_examples), len(val_examples)
 
-# %% id="BSswr5TKvoNM" colab={"base_uri": "https://localhost:8080/"} outputId="50e99658-bd14-4861-cc4d-9fe048b85c3c"
+# %% colab={"base_uri": "https://localhost:8080/"} id="BSswr5TKvoNM" outputId="126bb026-b96c-4f91-901d-6d11bfd6f696"
 # 훈련 및 검증 데이터셋을 배치로 변환
-train_batches = make_batches(train_examples, num_samples=5000)
-val_batches = make_batches(val_examples, num_samples=500)
+# 학습 품질 향상을 위해 샘플 수 증가
+train_batches = make_batches(train_examples, num_samples=5000)  # 3000 → 5000 (더 많은 데이터)
+val_batches = make_batches(val_examples, num_samples=500)       # 300 → 500 (검증 데이터도 증가)
 len(train_batches), len(val_batches)
 
 # %% [markdown] id="PSufllC7wooA"
@@ -334,7 +348,7 @@ len(train_batches), len(val_batches)
 # 추론 루프를 작성하고 모델의 출력을 입력으로 다시 전달해야 합니다.  
 # 모델은 훈련 중에 자체 오류를 수정하는 방법을 배워야 하기 때문에 보다 안정적인 모델을 제공할 수 있습니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="CAw2XjRwLFWr" outputId="e4ec4618-c976-4c47-803c-6b073b952a99"
+# %% colab={"base_uri": "https://localhost:8080/"} id="CAw2XjRwLFWr" outputId="a0ecdff7-e3dc-48dd-c798-54cc11e5f13b"
 # 훈련 배치의 첫 번째 요소 가져오기
 for (pt, en), en_labels in train_batches.take(1):
   break
@@ -347,7 +361,7 @@ print(en_labels.shape)
 # %% [markdown] id="Tzo3JKaqx46g"
 # `en`과 `en_labels`는 동일하며 한자리만 shift 했습니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="apFeC-WWxzR4" outputId="c06c5d46-ff4d-47cd-90db-df58aabdb31b"
+# %% colab={"base_uri": "https://localhost:8080/"} id="apFeC-WWxzR4" outputId="0259adc1-cd3f-4676-f1df-b1bbd3c2a6d3"
 print(en[0][:10])
 print(en_labels[0][:10])
 
@@ -425,7 +439,7 @@ def positional_encoding(length, depth):
 # %% [markdown] id="Ra1IcbzFhnmF"
 # 위치 인코딩 기능은 임베딩 벡터의 깊이를 따라 위치에 대해 서로 다른 주파수에서 진동하는 사인과 코사인의 스택입니다. position 축을 따라 진동합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/", "height": 473} id="AKf4Ky2dhg0L" outputId="3531451a-3cc4-45df-a9be-9c7cd2bce2b0"
+# %% colab={"base_uri": "https://localhost:8080/", "height": 473} id="AKf4Ky2dhg0L" outputId="53811a0b-45fd-4812-922e-43b8ed6bb28b"
 # 위치 인코딩 생성
 pos_encoding = positional_encoding(length=2048, depth=512)
 
@@ -467,8 +481,8 @@ class PositionalEmbedding(tf.keras.layers.Layer):
 
 # %% id="tfz-EaCEDfUJ"
 # 포르투갈어와 영어를 위한 위치 인코딩 임베딩 레이어 생성
-embed_pt = PositionalEmbedding(vocab_size=tokenizers.pt.get_vocab_size().numpy(), d_model=512)
-embed_en = PositionalEmbedding(vocab_size=tokenizers.en.get_vocab_size().numpy(), d_model=512)
+embed_pt = PositionalEmbedding(vocab_size=int(tokenizers.pt.get_vocab_size().numpy()), d_model=512)
+embed_en = PositionalEmbedding(vocab_size=int(tokenizers.en.get_vocab_size().numpy()), d_model=512)
 
 # 포르투갈어 입력에 대한 임베딩 적용
 pt_emb = embed_pt(pt)
@@ -476,7 +490,7 @@ pt_emb = embed_pt(pt)
 # 영어 입력에 대한 임베딩 적용
 en_emb = embed_en(en)
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="3fJZ_ArLELhJ" outputId="6a906836-0e9b-4b33-e863-f4265d2da34a"
+# %% colab={"base_uri": "https://localhost:8080/"} id="3fJZ_ArLELhJ" outputId="63544563-3462-4381-e1fa-dd6bedea02af"
 # 영어 임베딩 레이어의 마스크 속성 확인
 en_emb._keras_mask
 
@@ -666,7 +680,7 @@ class CrossAttention(BaseAttention):
 # %% [markdown] id="BCQsj7ljKv-4"
 # sample input을 시험삼아 수행해 봅니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="Qw1FJV5qRk79" outputId="39efff69-9ad7-4eca-c63d-072a756021e0"
+# %% colab={"base_uri": "https://localhost:8080/"} id="Qw1FJV5qRk79" outputId="c4975a46-42c3-45fb-eff8-eeb70e8e7787"
 # CrossAttention 레이어 예시 생성
 sample_ca = CrossAttention(num_heads=2, key_dim=512)
 
@@ -717,7 +731,7 @@ class GlobalSelfAttention(BaseAttention):
     return x
 
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="jPn2D07-Jcmj" outputId="fdc19bf1-71b7-4df6-8a57-efe58aecc18c"
+# %% colab={"base_uri": "https://localhost:8080/"} id="jPn2D07-Jcmj" outputId="aca40593-ed3b-4459-98f0-1cf599cb40e2"
 # GlobalSelfAttention 레이어 예시 생성
 # num_heads=2, key_dim=512인 샘플 글로벌 셀프 어텐션 레이어(sample_gsa) 생성
 sample_gsa = GlobalSelfAttention(num_heads=2, key_dim=512)
@@ -837,7 +851,7 @@ class CausalSelfAttention(BaseAttention):
 #
 # CausalSelfAttention 클래스를 사용하여 num_heads=2, key_dim=512인 샘플 인과적 셀프 어텐션 레이어(sample_csa)를 생성합니다. en_emb는 영어 임베딩을 나타내며, 이의 형상을 출력하여 확인합니다. 그 후, sample_csa(en_emb)는 영어 임베딩에 인과적 셀프 어텐션 레이어를 적용합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="x4dQuzvlD99_" outputId="b0effa2a-9369-4b5d-b068-71093fa4045d"
+# %% colab={"base_uri": "https://localhost:8080/"} id="x4dQuzvlD99_" outputId="d25cd459-7e2b-4a6f-c1d5-9980d75add86"
 # CausalSelfAttention 레이어 예시 생성
 sample_csa = CausalSelfAttention(num_heads=2, key_dim=512)
 
@@ -850,7 +864,7 @@ print(sample_csa(en_emb).shape)  # 인과적 셀프 어텐션 적용 후 형상
 # %% [markdown] id="n-IPCEkajleb"
 # 초기 시퀀스 요소의 출력은 이후 요소에 의존하지 않으므로 레이어 적용 전 또는 후에 요소를 자르는지는 중요하지 않습니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="bwKlheQ-WVxl" outputId="159d254f-ae41-40db-e0d7-838dddb84e24"
+# %% colab={"base_uri": "https://localhost:8080/"} id="bwKlheQ-WVxl" outputId="ec6e5db5-9745-4b94-b3b6-336630ce6a51"
 # 첫 번째 방법: 입력 시퀀스의 첫 3개 토큰에 대해서만 인과적 셀프 어텐션 적용
 out1 = sample_csa(embed_en(en[:, :3]))
 
@@ -909,7 +923,7 @@ class FeedForward(tf.keras.layers.Layer):
 # %% [markdown] id="eQBlOVQU_hUt"
 # 레이어를 테스트하면 출력은 입력과 모양이 동일합니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="r-Y8Yqi1_hUt" outputId="7b4dea95-6165-4991-a08d-c3fd3ba52722"
+# %% colab={"base_uri": "https://localhost:8080/"} id="r-Y8Yqi1_hUt" outputId="6294556b-7afe-4a02-d718-66c873381d1b"
 # FeedForward 레이어 예시 생성
 sample_ffn = FeedForward(512, 2048)
 
@@ -968,7 +982,7 @@ class EncoderLayer(tf.keras.layers.Layer):
 # %% [markdown] id="QeXHMUlb6q6F"
 # 출력은 입력과 동일한 모양을 갖게 됩니다.
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="AzZRXdO0mI48" outputId="7065ae01-e381-4920-b434-64a638c1f027"
+# %% colab={"base_uri": "https://localhost:8080/"} id="AzZRXdO0mI48" outputId="8abdb416-28da-471e-ccc3-23307c13d7f0"
 # EncoderLayer 레이어 예시 생성
 sample_encoder_layer = EncoderLayer(d_model=512, num_heads=8, dff=2048)
 
@@ -1048,7 +1062,7 @@ class Encoder(tf.keras.layers.Layer):
 #
 # 4개의 레이어, 512차원의 모델, 8개의 어텐션 헤드, 2048차원의 피드포워드 네트워크, 그리고 8500 크기의 어휘 사전을 가진 샘플 인코더(sample_encoder)를 생성
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="SDPXTvYgJH8s" outputId="db6623fe-f19b-4b59-c3a1-207e3e8280c3"
+# %% colab={"base_uri": "https://localhost:8080/"} id="SDPXTvYgJH8s" outputId="20c61895-93af-4982-972d-f47c3dfc2156"
 # 인코더 인스턴스 생성
 sample_encoder = Encoder(num_layers=4,
                          d_model=512,
@@ -1125,7 +1139,7 @@ class DecoderLayer(tf.keras.layers.Layer):
 # %% [markdown] id="a6T3RSR_6nJX"
 # decoder layer 테스트:
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="Ne2Bqx8k71l0" outputId="1711c2f4-b65a-4140-a016-668345e061e1"
+# %% colab={"base_uri": "https://localhost:8080/"} id="Ne2Bqx8k71l0" outputId="b950edf2-de40-45f6-89e9-eaf51bf38864"
 # DecoderLayer 레이어 예시 생성
 sample_decoder_layer = DecoderLayer(d_model=512, num_heads=8, dff=2048)
 
@@ -1200,7 +1214,7 @@ class Decoder(tf.keras.layers.Layer):
 # %% [markdown] id="eALcB--YMmLf"
 # decoder 테스트:
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="xyHdG_jWPgKu" outputId="98e3feab-946a-4b39-91f3-0c89adc5a260"
+# %% colab={"base_uri": "https://localhost:8080/"} id="xyHdG_jWPgKu" outputId="495ede83-6703-4428-aadd-031ac69f4e14"
 # 디코더 인스턴스 생성
 sample_decoder = Decoder(num_layers=4,
                          d_model=512,
@@ -1218,7 +1232,7 @@ print(en.shape)       # 영어 입력 데이터 형상
 print(pt_emb.shape)   # 포르투갈어 임베딩 형상
 print(output.shape)   # 디코더 출력 형상
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="ioJ4XJAUAReI" outputId="56c408f9-1e8a-4280-e238-30c130a08184"
+# %% colab={"base_uri": "https://localhost:8080/"} id="ioJ4XJAUAReI" outputId="75bf3f56-49d4-471c-b80f-23685d33b3d8"
 # 디코더의 마지막 어텐션 점수의 형상 확인
 sample_decoder.last_attn_scores.shape  # (배치 크기, 어텐션 헤드 수, 타겟 시퀀스 길이, 입력 시퀀스 길이)
 
@@ -1310,11 +1324,11 @@ class Transformer(tf.keras.Model):
 # num_heads = 8
 # dropout_rate = 0.1
 
-# ✅ 강의용 축소 버전
-num_layers = 2        # 4 → 2 (레이어 수 절반)
-d_model = 64          # 128 → 64 (임베딩 차원 축소)
-dff = 256             # 512 → 256 (FFN 차원 축소)
-num_heads = 4         # 8 → 4 (어텐션 헤드 절반)
+# ✅ 학습이 실제로 이루어지도록 개선된 버전 (30분 정도 소요)
+num_layers = 3        # 2 → 3 (레이어 수 증가로 학습 능력 향상)
+d_model = 96          # 64 → 96 (임베딩 차원 증가)
+dff = 384             # 256 → 384 (FFN 차원 증가)
+num_heads = 6         # 4 → 6 (어텐션 헤드 증가, d_model=96이므로 6으로 나눠짐)
 dropout_rate = 0.1
 
 # %% [markdown] id="yYbXDEhhlzd6"
@@ -1329,14 +1343,14 @@ transformer = Transformer(
     d_model=d_model,                     # 임베딩 차원
     num_heads=num_heads,                 # 어텐션 헤드의 수
     dff=dff,                             # 피드포워드 네트워크의 차원
-    input_vocab_size=tokenizers.pt.get_vocab_size().numpy(),  # 포르투갈어 어휘 사전 크기
-    target_vocab_size=tokenizers.en.get_vocab_size().numpy(), # 영어 어휘 사전 크기
+    input_vocab_size=int(tokenizers.pt.get_vocab_size().numpy()),  # 포르투갈어 어휘 사전 크기
+    target_vocab_size=int(tokenizers.en.get_vocab_size().numpy()), # 영어 어휘 사전 크기
     dropout_rate=dropout_rate)           # 드롭아웃 비율
 
 # %% [markdown] id="Qbw3CYn2tQQx"
 # Test
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="c8eO85hpFHmE" outputId="ad0f4872-9a6d-43e6-b442-9315a5059220"
+# %% colab={"base_uri": "https://localhost:8080/"} id="c8eO85hpFHmE" outputId="c6b72e32-55ec-43ed-830b-d5ce1002d6b1"
 # 트랜스포머 모델에 포르투갈어와 영어 입력 적용
 output = transformer((pt, en))
 
@@ -1345,7 +1359,7 @@ print(en.shape)  # 영어 입력 데이터 형상
 print(pt.shape)  # 포르투갈어 입력 데이터 형상
 print(output.shape)  # 트랜스포머 모델 출력 형상
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="olTLrK8pAcLd" outputId="8226a6ce-16a2-4435-a88a-5ae1427248d2"
+# %% colab={"base_uri": "https://localhost:8080/"} id="olTLrK8pAcLd" outputId="6a4ec467-7c26-4b97-e138-51e7f8bf2b6a"
 # 트랜스포머 모델의 디코더에서 마지막 디코더 레이어의 어텐션 점수 확인
 attn_scores = transformer.decoder.dec_layers[-1].last_attn_scores
 print(attn_scores.shape)  # (배치 크기, 어텐션 헤드 수, 타겟 시퀀스 길이, 입력 시퀀스 길이)
@@ -1353,7 +1367,7 @@ print(attn_scores.shape)  # (배치 크기, 어텐션 헤드 수, 타겟 시퀀�
 # %% [markdown] id="Wo1bqScWN_gL"
 # 모델의 요약을 출력:
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="IsUPhlfEtOjn" outputId="edc34aef-618b-4a83-ddf2-d721033d0cf7"
+# %% colab={"base_uri": "https://localhost:8080/"} id="IsUPhlfEtOjn" outputId="8ee77736-56cc-43d7-d1aa-f7e8acc22fb8"
 print("모델 타입:", type(transformer))
 
 if hasattr(transformer, 'layers'):
@@ -1382,7 +1396,7 @@ if hasattr(transformer, 'trainable_variables'):
 
 # %% id="iYQdOO1axwEI"
 class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
-  def __init__(self, d_model, warmup_steps=4000):
+  def __init__(self, d_model, warmup_steps=2000):  # 4000 → 2000 (더 빠른 학습 시작)
     super().__init__()
 
     self.d_model = d_model  # 모델 차원
@@ -1412,7 +1426,7 @@ optimizer = tf.keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98,
 # %% [markdown] id="fTb2S4RnQ8DU"
 # 사용자 정의 learning rate scheduler Test
 
-# %% colab={"base_uri": "https://localhost:8080/", "height": 467} id="Xij3MwYVRAAS" outputId="df7e969c-f444-487a-bfae-7d1dd3d54f5b"
+# %% colab={"base_uri": "https://localhost:8080/", "height": 467} id="Xij3MwYVRAAS" outputId="5c396294-766e-4595-d649-cfd9c443fe4d"
 # 40000 스텝까지의 학습률 스케줄 시각화
 plt.plot(learning_rate(tf.range(40000, dtype=tf.float32)))
 plt.ylabel('Learning Rate')  # y축 레이블: '학습률'
@@ -1469,8 +1483,6 @@ def masked_accuracy(label, pred):
 
 # %% [markdown] id="Mk8vwuN24hafK"
 # 모든 구성 요소가 준비되면 `model.compile`을 사용하여 학습 절차를 구성한 다음 `model.fit`을 사용하여 실행합니다.
-#
-# 참고: Colab에서 학습하는 데 약 20시간이 걸립니다.
 
 # %% id="Una1v0hDlIsT"
 # 트랜스포머 모델 컴파일
@@ -1479,18 +1491,26 @@ transformer.compile(
     optimizer=optimizer,          # 최적화 알고리즘
     metrics=[masked_accuracy])    # 마스킹된 정확도를 평가 지표로 사용
 
-# %% colab={"base_uri": "https://localhost:8080/"} id="Jg35qKvVlctp" outputId="0d03d9f0-fe84-4a36-da4c-c984197a3ea0"
+# %% colab={"base_uri": "https://localhost:8080/"} id="Jg35qKvVlctp" outputId="4e2054d8-1e18-4dd8-e6de-445d57b99897"
 import time
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # 시작 시간 기록
 start_time = time.time()
 
+# 학습 품질 향상을 위한 콜백 설정
+callbacks = [
+    EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True, verbose=1),  # patience 5 → 10 (더 많은 기회)
+    ModelCheckpoint('best_transformer.weights.h5', monitor='val_loss',
+                   save_best_only=True, save_weights_only=True, verbose=1)  # .weights.h5로 끝나야 함
+]
+
 # 모델 훈련
 transformer.fit(
     train_batches,
-    # epochs=20,
-    epochs=1,
-    validation_data=val_batches
+    epochs=30,  # 20 → 30 (더 많은 epoch)
+    validation_data=val_batches,
+    callbacks=callbacks
 )
 
 # 실행 시간 계산 및 출력
@@ -1588,7 +1608,7 @@ def print_translation(sentence, tokens, ground_truth):
 # %% [markdown] id="buUeDo58TIoD"
 # Example 1:
 
-# %% id="o9CEm4cuTGtw" colab={"base_uri": "https://localhost:8080/"} outputId="38123560-85c7-49c6-dd5b-49dea37d32e4"
+# %% colab={"base_uri": "https://localhost:8080/"} id="o9CEm4cuTGtw" outputId="7c124199-157c-45dc-87a8-54a31d37788c"
 # 포르투갈어 문장
 sentence = 'este é um problema que temos que resolver.'
 # 실제 번역 (ground truth)
@@ -1604,7 +1624,7 @@ print_translation(sentence, translated_text, ground_truth)
 # %% [markdown] id="sfJrFBZ6TJxc"
 # Example 2:
 
-# %% id="elmz_Ly7THuJ" colab={"base_uri": "https://localhost:8080/"} outputId="5f2c793e-d584-4b12-8f65-d3029e2df128"
+# %% colab={"base_uri": "https://localhost:8080/"} id="elmz_Ly7THuJ" outputId="f2374644-002c-4a5c-819d-ced95c530999"
 sentence = 'os meus vizinhos ouviram sobre esta ideia.'
 ground_truth = 'and my neighboring homes heard about this idea .'
 
@@ -1615,7 +1635,7 @@ print_translation(sentence, translated_text, ground_truth)
 # %% [markdown] id="EY7NfEjrTOCr"
 # Example 3:
 
-# %% id="bmmtPo3vTOwj" colab={"base_uri": "https://localhost:8080/"} outputId="b7702f63-11f4-4d6b-a794-1523ab97934e"
+# %% colab={"base_uri": "https://localhost:8080/"} id="bmmtPo3vTOwj" outputId="1bdf96b7-07c0-4127-82b2-dc52f8ca1b1f"
 sentence = 'vou então muito rapidamente partilhar convosco algumas histórias de algumas coisas mágicas que aconteceram.'
 ground_truth = "so i'll just share with you some stories very quickly of some magical things that have happened."
 
@@ -1631,7 +1651,7 @@ print_translation(sentence, translated_text, ground_truth)
 #
 # 예를 들어:
 
-# %% id="V3m2wcNLTU8K" colab={"base_uri": "https://localhost:8080/"} outputId="3fc2069b-4edb-438c-db36-9794dcb39f84"
+# %% colab={"base_uri": "https://localhost:8080/"} id="V3m2wcNLTU8K" outputId="2e7b62f2-9d6b-4590-eac4-eb2cdb24c400"
 sentence = 'este é o primeiro livro que eu fiz.'
 ground_truth = "this is the first book i've ever done."
 
@@ -1662,7 +1682,7 @@ def plot_attention_head(in_tokens, translated_tokens, attention):
   ax.set_yticklabels(labels)  # y축 틱 레이블 설정
 
 
-# %% id="yI4YWU2uXDeW" colab={"base_uri": "https://localhost:8080/"} outputId="39b4d0e0-a3fb-48ce-9161-c700d6077cb1"
+# %% colab={"base_uri": "https://localhost:8080/"} id="yI4YWU2uXDeW" outputId="7a760069-5198-46a1-eec3-44015b4036ac"
 head = 0  # 검사할 어텐션 헤드 번호
 # 어텐션 가중치의 형상: `(batch=1, num_heads, seq_len_q, seq_len_k)`
 attention_heads = tf.squeeze(attention_weights, 0)  # 배치 차원 제거
@@ -1672,7 +1692,7 @@ attention.shape  # 선택된 어텐션 헤드의 형상
 # %% [markdown] id="facNouzOXMSu"
 # 입력(포르투갈어) 토큰은 다음과 같습니다.
 
-# %% id="SMEpyioWTmSN" colab={"base_uri": "https://localhost:8080/"} outputId="bf898d38-18e4-4d9e-c8f3-28733a0a6753"
+# %% colab={"base_uri": "https://localhost:8080/"} id="SMEpyioWTmSN" outputId="a176400b-b483-4ad8-f29b-e397f3ee73c1"
 # 입력 문장을 텐서로 변환
 in_tokens = tf.convert_to_tensor([sentence])
 # 포르투갈어 토크나이저를 사용하여 토큰화
@@ -1684,10 +1704,10 @@ in_tokens  # 토큰화된 입력 문장 출력
 # %% [markdown] id="JLg9HTKCXPKz"
 # 다음은 출력(영어 번역) 토큰입니다.
 
-# %% id="GzvIo5uYTnHG" colab={"base_uri": "https://localhost:8080/"} outputId="999fa66d-5b58-4c22-94c4-b39153c4dcf4"
+# %% colab={"base_uri": "https://localhost:8080/"} id="GzvIo5uYTnHG" outputId="46d201f3-9653-41b6-8f6f-5ed0a93b0e09"
 translated_tokens
 
-# %% id="lrNh47D1ToBD" colab={"base_uri": "https://localhost:8080/", "height": 479} outputId="f87e481f-03f8-4dcc-8d78-54eb2ab123f5"
+# %% colab={"base_uri": "https://localhost:8080/", "height": 480} id="lrNh47D1ToBD" outputId="3a9efcbd-73e6-4815-a49b-dadb1710dddf"
 # 어텐션 맵 시각화
 plot_attention_head(in_tokens, translated_tokens, attention)
 
@@ -1716,7 +1736,7 @@ def plot_attention_weights(sentence, translated_tokens, attention_heads):
   plt.show()  # 그래프 표시
 
 
-# %% id="lBMujUb1Tr4C" colab={"base_uri": "https://localhost:8080/", "height": 389} outputId="f28be37a-abbe-45cf-f1e9-47dd91fdb045"
+# %% colab={"base_uri": "https://localhost:8080/", "height": 460} id="lBMujUb1Tr4C" outputId="0d65f5a1-6102-4209-d5d4-e0043537dcd8"
 # 주어진 문장, 번역된 토큰, 첫 번째 어텐션 헤드의 가중치를 사용하여 어텐션 맵 시각화
 plot_attention_weights(sentence,
                        translated_tokens,
